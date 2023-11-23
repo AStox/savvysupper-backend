@@ -1,5 +1,9 @@
 import express from "express";
 import pool from "./db";
+import { vectorDBClient } from "./vectorDB";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -29,4 +33,12 @@ app.get("/api/users", async (req, res) => {
   }
 });
 
-// ... existing app.listen() ...
+app.get("/api/query", async (req, res) => {
+  try {
+    const query = (req.query.q as string) || "";
+    const results = await vectorDBClient.query(query, 20);
+    res.json(results);
+  } catch (err) {
+    res.status(500).send("Internal Server Error");
+  }
+});
