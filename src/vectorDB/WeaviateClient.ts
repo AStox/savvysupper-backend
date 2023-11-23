@@ -7,7 +7,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 export class WeaviateClient implements VectorDBClient {
-  async query(queryString: string, resultLimit = 20): Promise<any[]> {
+  async query(queryString: string, resultLimit = 5): Promise<any[]> {
     const weaviateApiKey = process.env.WEAVIATE_API_KEY || "";
     const cohereApiKey = process.env.COHERE_API_KEY || "";
 
@@ -32,6 +32,8 @@ export class WeaviateClient implements VectorDBClient {
         snippet: `${item.title} (price: $${
           item.discountedPrice
         }, Savings: $${item.amountSaved.toFixed(2)})`,
+        price: item.discountedPrice.toFixed(2),
+        amountSaved: item.amountSaved.toFixed(2),
       }));
     } catch (error) {
       console.error("Error querying Weaviate:", error);

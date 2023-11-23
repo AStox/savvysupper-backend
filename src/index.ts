@@ -2,6 +2,7 @@ import express from "express";
 import pool from "./db";
 import { vectorDBClient } from "./vectorDB";
 import dotenv from "dotenv";
+import { getMeal } from "./api";
 
 dotenv.config();
 
@@ -33,12 +34,17 @@ app.get("/api/users", async (req, res) => {
   }
 });
 
-app.get("/api/query", async (req, res) => {
+app.get("/api/queryVectorDB", async (req, res) => {
   try {
+    const count = 10;
     const query = (req.query.q as string) || "";
-    const results = await vectorDBClient.query(query, 20);
+    const results = await vectorDBClient.query(query, count);
+    // results.sort
+
     res.json(results);
   } catch (err) {
     res.status(500).send("Internal Server Error");
   }
 });
+
+app.post("/api/getMeal", getMeal);
