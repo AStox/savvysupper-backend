@@ -1,21 +1,23 @@
-import { Request, Response } from "express";
-import { aiChatClient } from "./AIChat";
-import { vectorDBClient } from "./vectorDB";
+// src/api/getMeal.test.ts
 
-export async function getMeal(req: Request, res: Response): Promise<void> {
-  try {
-    // Query Weaviate (or any other vector DB currently configured)
-    const proteinDocuments = await vectorDBClient.query("protein", 3);
-    const vegetableDocuments = await vectorDBClient.query("vegetable", 6);
-    const carbDocuments = await vectorDBClient.query("carbohydrate", 2);
-    const documents = proteinDocuments.concat(vegetableDocuments, carbDocuments);
+import request from "supertest";
+import express, { Express } from "express";
+import { getMeal } from "../src/api";
 
-    // Assume 'chatHistory' and 'message' are provided in the request
-    // You might need to adjust this based on how the data is sent in the request
+describe("getMeal Integration Test", () => {
+  let app: Express;
+
+  beforeAll(() => {
+    app = express();
+    app.use(express.json());
+    app.post("/api/getMeal", getMeal);
+  });
+
+  it("should respond with meal data", async () => {
     const chatHistory = [
       {
-        role: "system",
-        content: `Use the provided documents containing grocery sale information to generate a recipe using as many of the items as reasonably possible.
+        role: "user",
+        content: `Use RAG and the provided documents containing grocery sale information to generate a recipe using as many of the items as reasonably possible.
           You should prioritize making a realistic recipe over using as many items as possible however. 
           Feel free to add in items that aren't on sale if you think it will make the recipe more realistic. 
           And tell me the pricing information for each ingredient where this information can be cited using the attached documents. 
@@ -59,22 +61,12 @@ export async function getMeal(req: Request, res: Response): Promise<void> {
          }
       `,
       },
-      {
-        role: "system",
-        content: `Here are the documents: ${documents}`,
-      },
-      {
-        role: "user",
-        content: "Generate the next recipe",
-      },
     ];
+    const message = "Generate the next recipe";
 
-    const response = await aiChatClient.chat(chatHistory, documents);
+    chatHistory.push({ role: "user", content: message });
 
-    // Send the response back to the client
-    res.status(200).json(response);
-  } catch (error) {
-    console.error("Error in getMeal:", error);
-    res.status(500).send("Internal Server Error");
-  }
-}
+    const response = await request(app).post("/api/getMeal").send({ chatHistory });
+    expect(response.status).toBe(200);
+  });
+});

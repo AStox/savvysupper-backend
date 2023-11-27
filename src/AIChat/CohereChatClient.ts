@@ -10,8 +10,10 @@ export class CohereChatClient implements AIChatClient {
     this.cohere = new CohereClient({ token: apiKey });
   }
 
-  async chat(chatHistory: any[], message: string, documents: any[]): Promise<any> {
+  async chat(chatHistory: any[], documents: any[]): Promise<any> {
     try {
+      const message = chatHistory[chatHistory.length - 1].content;
+      chatHistory.pop();
       const response = await this.cohere.chat({
         chatHistory: chatHistory,
         message: message,

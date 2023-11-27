@@ -1,3 +1,3 @@
 export interface AIChatClient {
-  chat(chatHistory: any[], message: string, documents: any[]): Promise<any>;
+  chat(chatHistory: any[], documents: any[]): Promise<any>;
 }

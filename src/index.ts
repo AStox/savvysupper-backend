@@ -48,3 +48,5 @@ app.get("/api/queryVectorDB", async (req, res) => {
 });
 
 app.post("/api/getMeal", getMeal);
+
+export default app;
